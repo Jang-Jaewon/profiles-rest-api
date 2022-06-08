@@ -36,6 +36,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     """Database model for users in the system"""
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
+    bookmarked_feed = models.ManyToManyField("ProfileFeedItem", through="AccountToFeedBookmark", blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
@@ -69,3 +70,22 @@ class ProfileFeedItem(models.Model):
     def __str__(self):
         """Return the model as a string"""
         return self.status_text
+
+
+# 모집 직무 직군
+class AccountToFeedBookmark(models.Model):
+    user_profile = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    profile_feed_item = models.ForeignKey("ProfileFeedItem", on_delete=models.CASCADE)
+
+    class Meta:
+        managed = True
+        db_table = "account_to_feed_bookmark"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user_profile_id", "profile_feed_item_id"],
+                name="profile_feed_profile_feed_unique"
+            )
+        ]
